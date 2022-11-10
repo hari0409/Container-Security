@@ -1,7 +1,4 @@
 FROM node:19-buster
-WORKDIR /agent
-RUN apt-get update && apt-get install -y lsb-release && apt-get clean all 
-RUN curl -so wazuh-agent-4.3.9.deb https://packages.wazuh.com/4.x/apt/pool/main/w/wazuh-agent/wazuh-agent_4.3.9-1_amd64.deb && WAZUH_MANAGER='localhost' WAZUH_AGENT_GROUP='default' dpkg -i ./wazuh-agent-4.3.9.deb
 WORKDIR /app
 COPY package.json ./
 RUN npm i 
