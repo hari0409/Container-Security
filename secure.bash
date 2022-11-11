@@ -21,14 +21,14 @@ Dockle_Scan(){
         read -r image_name
         echo "Scanning the image $image_name"
         mkdir /home/hari/Desktop/"$image_name"
-        sudo dockle --no-color "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/dockle_log.txt
+        sudo dockle --no-color "$image_name" >&1 | tee ~/Desktop/"$image_name"/dockle_log.txt
     else 
         echo "Dockle present"
         echo "Enter image name"
         read -r image_name
         echo "Scanning the image $image_name"
         mkdir /home/hari/Desktop/"$image_name"
-        sudo dockle --no-color "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/dockle_log.txt
+        sudo dockle --no-color "$image_name" >&1 | tee ~/Desktop/"$image_name"/dockle_log.txt
     fi
     echo 'Press 9 to go back'
     read -r option
@@ -46,7 +46,7 @@ Trivy_Scan(){
         trivy fs --exit-code 1 .
         echo "Enter image name"
         read -r image_name
-        trivy image "$image_name" 1>trivy_webserver.txt
+        sudo trivy image "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/trivy_log.txt
     else 
         echo "Trivy present"
         echo "Enter image name"
@@ -91,6 +91,19 @@ Hadolint_Scan(){
     fi
 }
 
+Anchore_Scan(){
+    if [[ "$(docker images -q anchore/grype:latest 2> /dev/null)" == "" ]]; then
+        printf "Anchore already exists.\n NOTE: This can be used to scan only images in docker hub that you have access to."
+        read -r image_name
+        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee ./log.json
+    else
+        printf "Anchore not available.\n NOTE: This can be used to scan only images in docker hub that you have access to."
+        docker pull anchore/grype:latest
+        read -r image_name
+        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee ./log.json
+    fi
+}
+
 Welcome(){
     figlet "DockSecure"
     echo 'What do you want to do'
@@ -105,6 +118,9 @@ Welcome(){
         ;;
         3)
             Hadolint_Scan
+        ;;
+        4)
+            Anchore_Scan
         ;;
         *)
             echo "Invalid Option"
