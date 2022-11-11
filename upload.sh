@@ -1,5 +1,7 @@
 #!/bin/bash
 git add .
 d=$(date)
-git commit -m "$d"
+echo "Enter name: "
+read -r user
+git commit -m "$d-$user"
 git push origin master
