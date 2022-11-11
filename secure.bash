@@ -9,7 +9,7 @@ Package_Check(){
 
 Dockle_Scan(){
     Package_Check dockle
-    if (( $? == 0 )); then
+    if (( $? == 0 )); then # if dockle not installed
         echo "Dockle not installed.Installing dockle"
         VERSION=$(
         curl --silent "https://api.github.com/repos/goodwithtech/dockle/releases/latest" | \
@@ -63,7 +63,7 @@ Trivy_Scan(){
 }
 
 Hadolint_Scan(){
-    if [ -f "/bin/hadolint" ]; then
+    if [ -f "/bin/hadolint" ]; then ## CHeck if hadolint is installed
         echo 'Enter the path for the Docker file'
         read -r file
         echo "Enter image name"
