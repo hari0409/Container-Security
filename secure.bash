@@ -46,6 +46,8 @@ Trivy_Scan(){
         trivy fs --exit-code 1 .
         echo "Enter image name"
         read -r image_name
+        echo "Scanning the image"
+        mkdir /home/hari/Desktop/"$image_name"
         sudo trivy image "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/trivy_log.txt
     else 
         echo "Trivy present"
@@ -69,7 +71,8 @@ Hadolint_Scan(){
         echo "Enter image name"
         read -r image_name
         if [ -f "$file" ]; then
-            hadolint "$file" >&1 | tee /home/hari/Desktop/"$image_name"/hadolint_log.txt
+            mkdir /home/hari/Desktop/"$image_name"
+            sudo hadolint "$file" >&1 | tee /home/hari/Desktop/"$image_name"/hadolint_log.txt
         else
             echo "File doesnt exists"
         fi
@@ -78,8 +81,11 @@ Hadolint_Scan(){
         sudo chmod +x /bin/hadolint
         echo 'Enter the path for the Docker file'
         read -r file
+        echo "Enter image name"
+        read -r image_name
         if [ -f "$file" ]; then
-            hadolint "$file" >&1 | tee /home/hari/Desktop/"$image_name"/hadolint_log.txt
+            mkdir /home/hari/Desktop/"$image_name"
+            sudo hadolint "$file" >&1 | tee /home/hari/Desktop/"$image_name"/hadolint_log.txt
         else
             echo "File doesnt exists"
         fi
@@ -93,21 +99,50 @@ Hadolint_Scan(){
 
 Anchore_Scan(){
     if [[ "$(docker images -q anchore/grype:latest 2> /dev/null)" == "" ]]; then
-        printf "Anchore already exists.\n NOTE: This can be used to scan only images in docker hub that you have access to."
+        printf "Anchore already exists.\nNOTE: This can be used to scan only images in docker hub that you have access to.\n"
+        echo 'Enter image name'
         read -r image_name
-        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee ./log.json
+        mkdir /home/hari/Desktop/"$image_name"
+        echo "Scanning it"
+        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/anchore_log.json
     else
-        printf "Anchore not available.\n NOTE: This can be used to scan only images in docker hub that you have access to."
+        printf "Anchore not available.\nNOTE: This can be used to scan only images in docker hub that you have access to.\n"
         docker pull anchore/grype:latest
+        echo 'Enter image name'
         read -r image_name
-        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee ./log.json
+        mkdir /home/hari/Desktop/"$image_name"
+        echo "Scanning it"
+        sudo docker run --rm anchore/grype:latest -o json "$image_name" >&1 | tee /home/hari/Desktop/"$image_name"/anchore_log.json
+    fi
+    echo 'Press 9 to go back'
+    read -r option
+    if [ "$option" -eq 9 ]; then
+        Welcome
+    fi
+}
+
+Complete_Container_Scan(){
+    if [ -d "./docker-bench-security" ]; then
+        echo "Docker Bench Security exists"
+        cd docker-bench-security || exit
+        sudo sh docker-bench-security.sh -b >&1 | tee /home/hari/Desktop/complete_scan.txt
+    else   
+        echo "Docker Bench Security doesnt exists"
+        git clone https://github.com/docker/docker-bench-security.git
+        cd docker-bench-security || exit
+        sudo sh docker-bench-security.sh -b >&1 | tee /home/hari/Desktop/complete_scan.txt
+    fi
+    echo 'Press 9 to go back'
+    read -r option
+    if [ "$option" -eq 9 ]; then
+        Welcome
     fi
 }
 
 Welcome(){
     figlet "DockSecure"
     echo 'What do you want to do'
-    printf "1. Docker Image Scan using Dockle\n2. Vulnerability Scan with Trivy\n3. Scan Dockerfile with Hadolint\n"
+    printf "1. Docker Image Scan using Dockle\n2. Vulnerability Scan with Trivy\n3. Scan Dockerfile with Hadolint\n4. Scan Hub images with Anchore\n5. Comeplete Scan\n"
     read -r option
     case "${option}" in
         1)
@@ -121,6 +156,9 @@ Welcome(){
         ;;
         4)
             Anchore_Scan
+        ;;
+        5)
+            Complete_Container_Scan
         ;;
         *)
             echo "Invalid Option"
