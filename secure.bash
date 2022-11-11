@@ -139,12 +139,24 @@ Complete_Container_Scan(){
     fi
 }
 
+Secure_Container(){
+    echo "Enter your container ID"
+    read -r container_id
+    echo "Securing by adding another user with no root previleges"
+    echo "Enter a username"
+    read -r user_name
+    docker exec -it "$container_id" sh
+    groupadd -r "$user_name" && useradd -r -g "$user_name" "$user_name"
+    exit
+}
+
+
 Welcome(){
     figlet "DockSecure"
     echo "Whats your username?"
     read -r user
     echo 'What do you want to do'
-    printf "1. Docker Image Scan using Dockle\n2. Vulnerability Scan with Trivy\n3. Scan Dockerfile with Hadolint\n4. Scan Hub images with Anchore\n5. Comeplete Scan\n"
+    printf "1. Docker Image Scan using Dockle\n2. Vulnerability Scan with Trivy\n3. Scan Dockerfile with Hadolint\n4. Scan Hub images with Anchore\n5. Comeplete Scan\n6. Secure my containers\n"
     read -r option
     case "${option}" in
         1)
@@ -161,6 +173,9 @@ Welcome(){
         ;;
         5)
             Complete_Container_Scan
+        ;;
+        6)
+            Secure_Container
         ;;
         *)
             echo "Invalid Option"
